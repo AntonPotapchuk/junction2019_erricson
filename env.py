@@ -4,6 +4,7 @@ import numpy as np
 from scipy.spatial.distance import cityblock
 from gym import spaces
 from client import CarDirection, Client
+import time
 
 
 class JunctionEnvironment(gym.Env):
@@ -74,10 +75,11 @@ class JunctionEnvironment(gym.Env):
 
         if action < 4:
             self.client.move_car(car_id, CarDirection(action))
+            time.sleep(0.3)
         else:
             # Do nothing (stay)
             pass
-
+        
         world = self.client.get_world()
         done = True if 'grid' not in world else False
 
