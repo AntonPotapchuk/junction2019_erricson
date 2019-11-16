@@ -35,18 +35,9 @@ class Client:
         self.actions_url = self.api_base_url + '/actions'
         self.team_name = team_name
 
-        self.__setup(log_level)
         self.__token = self.__get_token()
         if not self.__token:
             self.__token = self.__add_team_and_get_token()
-
-    @staticmethod
-    def __setup(log_level=logging.INFO):
-        logging.basicConfig(level=log_level)
-        logging.info('Setup complete')
-        if log_level != logging.DEBUG:
-            logging.getLogger("requests").setLevel(logging.WARNING)
-            logging.getLogger("urllib3").setLevel(logging.WARNING)
 
     @staticmethod
     def __log_request(method, url, data=None):
