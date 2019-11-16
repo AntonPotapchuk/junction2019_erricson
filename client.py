@@ -103,16 +103,12 @@ class Client:
 
     def get_score(self):
         r = requests.get(self.scores_url)
-        return r.json()
+        r = r.json()
+        return r[self.team_name]["current"]
 
     def get_world(self):
         r = requests.get(self.world_status_url)
         world = r.json()
-
-        # If game has ended, world just contains an informative message which is
-        # not useful here, just return False in that case
-        if 'grid' not in world:
-            return False
 
         logging.debug('Updated world data: %s', world)
         return world

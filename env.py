@@ -42,7 +42,7 @@ class JunctionEnvironment(gym.Env):
 
     def _setup(self):
         world = self.client.get_world()
-        if not world:
+        if "grid" not in world:
             self.client.start_game()
             world = self.client.get_world()
 
@@ -79,7 +79,11 @@ class JunctionEnvironment(gym.Env):
             pass
 
         world = self.client.get_world()
-        done = "grid" not in world
+        done = True if 'grid' not in world else False
+
+        if done:
+            return None, None, done, None
+
         obs = self.__process_observations(world, car_id)
         reward = self.client.get_score()
         info = {}
