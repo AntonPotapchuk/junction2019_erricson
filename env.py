@@ -78,9 +78,10 @@ class JunctionEnvironment(gym.Env):
             # Do nothing (stay)
             pass
 
-        obs = self.__process_observations(self.client.get_world(), car_id)
+        world = self.client.get_world()
+        done = "grid" in world
+        obs = self.__process_observations(world, car_id)
         reward = self.client.get_score()
-        done = "grid" in obs
         info = {}
         return obs, reward, done, info
 
@@ -155,26 +156,31 @@ class JunctionEnvironment(gym.Env):
         return x + self.width * y
 
     def __process_observations(self, obs, car_id):
-        map_space = np.array(obs["grid"]).reshape(self.height, self.width)[::-1, :]
-        customers, distance, destinations = self.__process_customers(obs["customers"])
+        map_space = np.array(obs["grid"]).reshape(self.height, self.width)
+        customers, distance, destinations = self.__process_customers(obs["customers"], car_id)
         my_locations, my_avail_capacity = self.__process_myself(obs["cars"], car_id)
         others_locations, others_avail_capacity = self.__process_others(obs["cars"], car_id)
 
-        return (map_space, customers, distance, destinations,
-                my_locations, my_avail_capacity, others_locations, others_avail_capacity)
+        obs = (map_space, customers, distance, destinations,
+               my_locations, my_avail_capacity, others_locations, others_avail_capacity)
+        obs = np.array(obs)
+        obs = np.moveaxis(obs, 0, 2)
+        return obs
 
-    def __process_customers(self, customers):
-        customers = [c for c in customers.values() if c["status"] == "waiting"]
+    def __process_customers(self, customers, car_id):
         customer_matrix = np.zeros((self.height, self.width))
         distance_matrix = np.zeros((self.height, self.width))
         destination_matrix = np.zeros((self.height, self.width))
 
-        for customer in customers:
+        for customer in [c for c in customers.values() if c["status"] == "waiting"]:
             origin_x, origin_y = self._index_to_coordinates(customer["origin"])
             destination_x, destionation_y = self._index_to_coordinates(customer["destination"])
 
             customer_matrix[origin_y, origin_x] = 1
             distance_matrix[origin_y, origin_x] = cityblock((origin_x, origin_y), (destination_x, destionation_y))
+
+        for customer in [c for c in customers.values() if c["car_id"] == car_id]:
+            destination_x, destionation_y = self._index_to_coordinates(customer["destination"])
             destination_matrix[destionation_y, destination_x] = 1
 
         return customer_matrix, distance_matrix, destination_matrix
