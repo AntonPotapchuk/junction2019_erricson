@@ -79,7 +79,7 @@ class JunctionEnvironment(gym.Env):
             pass
 
         world = self.client.get_world()
-        done = "grid" in world
+        done = "grid" not in world
         obs = self.__process_observations(world, car_id)
         reward = self.client.get_score()
         info = {}
