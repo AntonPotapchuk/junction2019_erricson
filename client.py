@@ -107,7 +107,10 @@ class Client:
         return r[self.team_name]["current"]
 
     def get_world(self):
-        r = requests.get(self.world_status_url)
+        if self.__token:
+            r = requests.get(self.world_status_url, headers={'Authorization': self.__token})
+        else:
+            r = requests.get(self.world_status_url)
         world = r.json()
 
         logging.debug('Updated world data: %s', world)
