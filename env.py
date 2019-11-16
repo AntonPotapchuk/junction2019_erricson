@@ -183,7 +183,7 @@ class JunctionEnvironment(gym.Env):
             customer_matrix[origin_y, origin_x] = 1
             distance_matrix[origin_y, origin_x] = cityblock((origin_x, origin_y), (destination_x, destionation_y))
 
-        for customer in [c for c in customers.values() if c["car_id"] == car_id]:
+        for customer in [c for c in customers.values() if str(c["car_id"]) == str(car_id)]:
             destination_x, destionation_y = self._index_to_coordinates(customer["destination"])
             destination_matrix[destionation_y, destination_x] = 1
 
