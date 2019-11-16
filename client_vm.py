@@ -151,4 +151,35 @@ class Runner(Thread):
 
         print('Max score:', max(self.scores))
         print('Last score:', self.scores[-1])
+
+
+game_ids = []
+
+if __name__ == "__main__":
+    print("In main thread")
+    client = Client(team_name=team_name, team_key=team_key)
+    env = JunctionEnvironment(client)
+
+    lock = Lock()
+
+    i=0
+    while True:
+        print("Running game", i)
+        i += 1
+        game_id = i
+        _ = env.reset()
+
+        processes = []
+        for car_id in env.car_ids:
+            process = Runner(car_id, game_id, env, lock)
+            processes.append(process)
+            
+
+        for process in processes:
+            process.start()
+
+        for process in processes:
+            process.join()
+        print(f"Game {i} finished")
+        game_ids.append(game_id)
         
