@@ -32,10 +32,9 @@ class JunctionEnvironment(gym.Env):
         functionality over time.
         """
 
-    def __init__(self, car_id: str, client: Client):
+    def __init__(self, client: Client):
         super().__init__()
 
-        self.car_id = str(car_id)
         self.client = client
 
         self.reward_range = (-float('inf'), float('inf'))
@@ -51,10 +50,10 @@ class JunctionEnvironment(gym.Env):
         self.action_space = spaces.Discrete(5)
         self.width = world["height"]
         self.height = world["width"]
-
+        self.car_ids = self.client.get_team_cars()
         self.observation_space = spaces.Box(low=0, high=100, shape=(self.height, self.width, 8), dtype=np.uint8)
 
-    def step(self, action):
+    def step(self, action, car_id):
         """Run one timestep of the environment's dynamics. When end of
         episode is reached, you are responsible for calling `reset()`
         to reset this environment's state.
@@ -70,13 +69,16 @@ class JunctionEnvironment(gym.Env):
             done (bool): whether the episode has ended, in which case further step() calls will return undefined results
             info (dict): contains auxiliary diagnostic information (helpful for debugging, and sometimes learning)
         """
+        if car_id not in self.car_ids:
+            raise Exception("Wrong car id")
+
         if action < 4:
-            self.client.move_car(self.car_id, CarDirection(action))
+            self.client.move_car(car_id, CarDirection(action))
         else:
             # Do nothing (stay)
             pass
 
-        obs = self.__process_observations(self.client.get_world())
+        obs = self.__process_observations(self.client.get_world(), car_id)
         reward = self.client.get_score()
         done = "grid" in obs
         info = {}
@@ -91,7 +93,11 @@ class JunctionEnvironment(gym.Env):
         self.client.stop_game()
         self.client.start_game()
         self._setup()
-        return self.__process_observations(self.client.get_world())
+
+        obsers = {}
+        for car_id in self.car_ids:
+            obsers[car_id] = self.__process_observations(self.client.get_world(), car_id)
+        return obsers
 
     def render(self, mode='human'):
         """Renders the environment.
@@ -148,11 +154,11 @@ class JunctionEnvironment(gym.Env):
     def _coordinates_to_index(self, x, y):
         return x + self.width * y
 
-    def __process_observations(self, obs):
+    def __process_observations(self, obs, car_id):
         map_space = np.array(obs["grid"]).reshape(self.height, self.width)[::-1, :]
         customers, distance, destinations = self.__process_customers(obs["customers"])
-        my_locations, my_avail_capacity = self.__process_myself(obs["cars"])
-        others_locations, others_avail_capacity = self.__process_others(obs["cars"])
+        my_locations, my_avail_capacity = self.__process_myself(obs["cars"], car_id)
+        others_locations, others_avail_capacity = self.__process_others(obs["cars"], car_id)
 
         return (map_space, customers, distance, destinations,
                 my_locations, my_avail_capacity, others_locations, others_avail_capacity)
@@ -173,8 +179,8 @@ class JunctionEnvironment(gym.Env):
 
         return customer_matrix, distance_matrix, destination_matrix
 
-    def __process_myself(self, cars):
-        car = [car for car_id, car in cars.items() if str(car_id) == self.car_id][0]
+    def __process_myself(self, cars, car_id):
+        car = [car for ind, car in cars.items() if str(ind) == car_id][0]
 
         locations = np.zeros((self.height, self.width))
         x, y = self._index_to_coordinates(car["position"])
@@ -183,8 +189,8 @@ class JunctionEnvironment(gym.Env):
 
         return locations, avail_capacity
 
-    def __process_others(self, cars):
-        cars = [car for car_id, car in cars.items() if str(car_id) != self.car_id]
+    def __process_others(self, cars, car_id):
+        cars = [car for ind, car in cars.items() if str(ind) != car_id]
 
         locations = np.zeros((self.height, self.width))
         avail_capacity = np.zeros((self.height, self.width))

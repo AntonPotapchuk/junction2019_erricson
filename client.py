@@ -30,7 +30,6 @@ class Client:
         # TODO: Probably, should be self.server_url + f'/{team_name}/api/v1'
         self.api_base_url = self.server_url + f'/api/v1'
         self.world_status_url = self.api_base_url + '/world'
-        print(self.world_status_url)
         self.scores_url = self.api_base_url + '/scores'
         self.team_base_url = self.admin_url + '/team'
         self.actions_url = self.api_base_url + '/actions'
@@ -80,7 +79,6 @@ class Client:
     def __get_token(self):
         token = None
         body = self.__send_get_request(self.admin_url)
-        print(self.admin_url)
         # Store the contents of the website under doc
         doc = lh.fromstring(body.text)
         tr_elements = doc.xpath('//tr')
