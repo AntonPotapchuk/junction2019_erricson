@@ -6,7 +6,7 @@ import os
 
 from threading import Thread, Lock
 from time import sleep
-from client import CarDirection, Client
+from client2 import CarDirection, Client
 from env import JunctionEnvironment
 from matplotlib import pyplot as plt
 from alg_astar import *
@@ -85,7 +85,7 @@ class Runner(Thread):
                 target_cell = min_path[0]
             else:
                 x, y = self.current_target
-                print(car_x, car_y)
+                #print(car_x, car_y)
                 path, _ = search(maze, 1, (car_x, car_y), (x ,y))
                 if not path:
                     self.current_target = None
@@ -121,7 +121,7 @@ class Runner(Thread):
             try:
                 new_action = self.megaalg(self.prev_obs)
                 self.lock.acquire()
-                print(new_action)
+                #print(new_action)
                 obs, score, done, _ = self.env.step(new_action, self.car_id)
                 # print(score, done)
             except Exception as ex:
@@ -142,8 +142,7 @@ class Runner(Thread):
             self.actions.append(action)
 
             self.prev_obs = obs                
-           # sleep(0.5)
-           
+           # sleep(0.5) 
         
         self.obss = np.array(self.obss)
         self.scores = np.array(self.scores)
@@ -167,7 +166,11 @@ if __name__ == "__main__":
         print("Running game", i)
         i += 1
         game_id = i
-        _ = env.reset()
+        msg = env.reset()
+        if msg is None:
+            sleep(1)
+            print('Sleeping...')
+            continue
 
         processes = []
         for car_id in env.car_ids:
