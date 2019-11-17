@@ -43,6 +43,7 @@ class JunctionEnvironment(gym.Env):
 
     def _setup(self):
         world = self.client.get_world()
+        # print(world)
         if "grid" not in world:
             self.client.start_game()
             world = self.client.get_world()
@@ -101,9 +102,13 @@ class JunctionEnvironment(gym.Env):
         self.client.start_game()
         self._setup()
 
+        world = self.client.get_world()
+        if "grid" not in world:
+            return None
+
         obsers = {}
         for car_id in self.car_ids:
-            obsers[car_id] = self.__process_observations(self.client.get_world(), car_id)
+            obsers[car_id] = self.__process_observations(world, car_id)
         return obsers
 
     def render(self, mode='human'):
