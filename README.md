@@ -1,5 +1,6 @@
 # FastCity
 <img src="/images/logo.png" width=300/>
+FastCity; City transportation of the futuer!
 
 This is our repository for the solution with came up with for th HackJunction 2019 Erricson Challenge. In this challenge, we use a combination of classical path finding and assignment algorithm to operate cars in a city to deliver customers. Our goal is to distribute the cars to more customers with least amount of movement as fast as possible which has implications on less ecological footprint and a better service to the customers when it comes to the reality.
 
@@ -24,8 +25,8 @@ The main effort in 1 and 2 is to make learning in step 3 easier, and faster. The
 
 Our solution is:
 - adaptable with different maps with different sizes and dynamics
-- learned in decentralized fashion 
-- suitable for decentralized execution yet with possibility for multi-agent cooperation
+- learned in decentralized fashion, each agent is autonomous but communicates with others (as in reality)
+- suitable for decentralized execution yet with the possibility for centralizing coordination
 
 ### Deployment
 Each car is controlled by an instance of the model trained in step 3 which would act as the brain for that agent.
