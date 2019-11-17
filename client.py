@@ -38,6 +38,7 @@ class Client:
         self.__token = self.__get_token()
         if not self.__token:
             self.__token = self.__add_team_and_get_token()
+            self.__token = self.__get_token()
 
     @staticmethod
     def __log_request(method, url, data=None):
@@ -83,6 +84,7 @@ class Client:
     def __add_team_and_get_token(self):
         body = self.__send_post_request(self.team_base_url, {'team_name': self.team_name})
 
+        token = None
         # Store the contents of the website under doc
         doc = lh.fromstring(body.text)
         tr_elements = doc.xpath('//tr')
@@ -116,12 +118,13 @@ class Client:
         logging.debug('Updated world data: %s', world)
         return world
 
-    def get_cars(self):
-        world = self.get_world()
+    def get_cars(self, world=None):
+        if not world:
+            world = self.get_world()
         return world["cars"]
 
-    def get_team_cars(self):
-        cars = self.get_cars()
+    def get_team_cars(self, world=None):
+        cars = self.get_cars(world)
         team_id = self.get_team_id()
         return [car_id for car_id, car in cars.items() if str(car["team_id"]) == team_id]
 
