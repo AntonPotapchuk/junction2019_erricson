@@ -66,10 +66,13 @@ class Client:
     def __send_post_request(self, url, data=None):
         self.__log_request('POST', url, data)
         if self.__token:
+            # print(url)
+            # print(data)
             r = requests.post(url, data, headers={'Authorization': self.__token})
         else:
             r = requests.post(url, data)
         self.__log_response(r)
+        # print(r.text)
         return r
 
     def __get_token(self):
@@ -81,6 +84,7 @@ class Client:
         for e in tr_elements:
             if e[1].text_content() == self.team_name:
                 token = e[2].text_content()
+                print(token)
 
         logging.info(f'Added team {self.team_name}')
         return token
@@ -114,7 +118,10 @@ class Client:
         logging.info("Stopped game")
 
     def get_score(self):
-        r = requests.get(self.scores_url)
+        if self.__token:
+            r = requests.get(self.scores_url, headers={'Authorization': self.__token})
+        else:
+            r = requests.get(self.scores_url)
         r = r.json()
         return r[self.team_name]["current"]
 
@@ -129,12 +136,13 @@ class Client:
         logging.debug('Updated world data: %s', world)
         return world
 
-    def get_cars(self):
-        world = self.get_world()
+    def get_cars(self, world=None):
+        if world is None:
+            world = self.get_world()
         return world["cars"]
 
-    def get_team_cars(self):
-        cars = self.get_cars()
+    def get_team_cars(self, world=None):
+        cars = self.get_cars(world)
         team_id = self.get_team_id()
         return [car_id for car_id, car in cars.items() if str(car["team_id"]) == team_id]
 
@@ -143,16 +151,18 @@ class Client:
 
     def get_team_id(self):
         teams = self.get_teams()
-        return str([team_id for team_id, team in teams.items() if team["name"] == self.team_name][0])
+        teams = [int(team_id) for team_id, team in teams.items() if team["name"] == self.team_name]
+        return str(max(teams))
 
     def move_car(self, car_id, direction):
+        print(car_id)
         logging.debug('Moving car ID %d to the %s', car_id, direction.name)
         request_content = json.dumps({
-            'type': 'move',
-            'action': {
+            'Type': 'move',
+            'Action': {
                 'message': 'Moving car ID %s to the %s' % (car_id, direction.name),
-                'carId': int(car_id),
-                'moveDirection': direction.value
+                'CarId': int(car_id),
+                'MoveDirection': direction.value
             }
         })
         self.__send_post_request(self.actions_url, request_content)

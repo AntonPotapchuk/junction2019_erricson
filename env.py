@@ -39,20 +39,17 @@ class JunctionEnvironment(gym.Env):
         self.client = client
 
         self.reward_range = (-float('inf'), float('inf'))
-        self._setup()
 
-    def _setup(self):
-        world = self.client.get_world()
+    def _setup(self, world):
         # print(world)
         if "grid" not in world:
-            self.client.start_game()
-            world = self.client.get_world()
+            return
 
         # north, east, south, west, nothing
         self.action_space = spaces.Discrete(5)
         self.width = world["height"]
         self.height = world["width"]
-        self.car_ids = self.client.get_team_cars()
+        self.car_ids = self.client.get_team_cars(world)
         self.observation_space = spaces.Box(low=0, high=100, shape=(self.height, self.width, 8), dtype=np.uint8)
 
     def step(self, action, car_id='0'):
@@ -98,11 +95,11 @@ class JunctionEnvironment(gym.Env):
         Returns:
             observation (object): the initial observation.
         """
-        self.client.stop_game()
-        self.client.start_game()
-        self._setup()
+        #self.client.stop_game()
+        #self.client.start_game()
 
         world = self.client.get_world()
+        self._setup(world)
         if "grid" not in world:
             return None
 
