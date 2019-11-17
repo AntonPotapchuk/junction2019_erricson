@@ -12,7 +12,7 @@ from matplotlib import pyplot as plt
 from alg_astar import *
 
 logger = logging.getLogger(None)
-logger.setLevel(logging.WARNING)
+logger.setLevel(logging.INFO)
 
 team_name = "turing"
 team_key = "gozwislx6txtylar9jsr6i6xkgkafjf8"
@@ -37,6 +37,7 @@ class Runner(Thread):
 
     def megaalg(self, obs):
         car_x, car_y = np.where(obs[:,:,4])[0][0], np.where(obs[:,:,4])[1][0]
+        print('Car position:', car_x, car_y)
         customer_positions = []
         customer_dists = []
         paths_to_clients = []
@@ -68,9 +69,10 @@ class Runner(Thread):
                     customer_positions.append((x,y))
                     dist = np.abs(car_x - x) + np.abs(car_y - y)
                     customer_dists.append(dist)
-                    path, status = search(maze, 1, (car_x, car_y), (x ,y))
-                    paths_to_clients.append(path)
-                    statuses.append(status)
+                    if dist < 50:
+                        path, status = search(maze, 1, (car_x, car_y), (x ,y))
+                        paths_to_clients.append(path)
+                        statuses.append(status)
 
                 completed_paths = [p for p,s in zip(paths_to_clients, statuses) if s==0]
                 if len(completed_paths)>0:
@@ -120,10 +122,11 @@ class Runner(Thread):
         while True:
             try:
                 new_action = self.megaalg(self.prev_obs)
+         
                 self.lock.acquire()
                 #print(new_action)
                 obs, score, done, _ = self.env.step(new_action, self.car_id)
-                # print(score, done)
+                print(score)
             except Exception as ex:
                 # print(f"{self.car_id}: {ex}")
                 raise ex
@@ -155,34 +158,44 @@ class Runner(Thread):
 game_ids = []
 
 if __name__ == "__main__":
-    print("In main thread")
-    client = Client(team_name=team_name, team_key=team_key)
-    env = JunctionEnvironment(client)
-
-    lock = Lock()
-
-    i=0
     while True:
-        print("Running game", i)
-        i += 1
-        game_id = i
-        msg = env.reset()
-        if msg is None:
-            sleep(1)
-            print('Sleeping...')
-            continue
+        try:
+            print("In main thread")
+            while True:
+                try:
+                    client = Client(team_name=team_name, team_key=team_key)
+                    env = JunctionEnvironment(client)
+                    break
+                except:
+                    sleep(1)
+                    
 
-        processes = []
-        for car_id in env.car_ids:
-            process = Runner(car_id, game_id, env, lock)
-            processes.append(process)
+            lock = Lock()
+
+            i=0
+            while True:
+                print("Running game", i)
+                i += 1
+                game_id = i
+                msg = env.reset()
+                if msg is None:
+                    sleep(1)
+                    print('Sleeping...')
+                    continue
+
+                processes = []
+                for car_id in env.car_ids:
+                    process = Runner(car_id, game_id, env, lock)
+                    processes.append(process)
             
 
-        for process in processes:
-            process.start()
+                for process in processes:
+                    process.start()
 
-        for process in processes:
-            process.join()
-        print(f"Game {i} finished")
-        game_ids.append(game_id)
+                for process in processes:
+                    process.join()
+                print(f"Game {i} finished")
+                game_ids.append(game_id)
+        except Exception:
+            pass
         
