@@ -18,5 +18,34 @@ This problem could be addressed with different levels of sophistication. We chos
 2. [Imitation Learning](http://ciml.info/dl/v0_99/ciml-v0_99-ch18.pdf) and [DAgger](https://www.cs.cmu.edu/~sross1/publications/Ross-AIStats11-NoRegret.pdf) (A Deep Learning model trained to imitate the baseline)
 3. A [DQN](https://en.wikipedia.org/wiki/Q-learning#Variants) [Reinforcement Learning](https://en.wikipedia.org/wiki/Reinforcement_learning) model for decentralized execution inspired by [Atari DQN](https://github.com/keras-rl/keras-rl/blob/master/examples/dqn_atari.py)
 
-The main effort in 1 and 2 is to make learning in step 3 easier, and faster. The imitation learning and DAgger has shown number of success in both practice and acedemia in recent years.
+The main effort in 1 and 2 is to make learning in step 3 easier, and faster. The imitation learning and DAgger has shown number of successes in both practice and acedemia in recent years. First we create pairs of observations and actions based on the A* algorithm and construct a dataset for supevised learning using these pairs. Then we train a neural network model on these samples. This should give us a performance at least better than random actions. Then this model is used to train a reinforcement learning agent.
 
+### Key Features
+
+Our solution is:
+- adaptable with different maps with different sizes and dynamics
+- learned in decentralized fashion 
+- suitable for decentralized execution yet with possibility for multi-agent cooperation
+
+### Deployment
+Each car is controlled by an instance of the model trained in step 3 which would act as the brain for that agent.
+
+
+# Structure of the Repo
+
+- `alg_astar.py` (A* algorithm for the baseline
+- `env.py` (a reinforcement learning environment developed for the challenge)
+- `dqn_fastcity.py` (The final DQN agent)
+- `notebooks/` (experiments conducted in Jupter-Notebooks specifically for imitation learning, etc.)
+- `visualization/` (a web-based visualizer provided by the challenge host)
+- `logs/` (tensorboard log directory, created by script)
+- `checkpoints/` (saved model weights, created by script)
+- `cache/` (some cached data such as the 
+- `images/` (to store some repo related images)
+
+
+## Future works
+
+- Improve the baseline
+- Improve the assignment algorithm
+- Work further on the RL agent
