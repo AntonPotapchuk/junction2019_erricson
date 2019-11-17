@@ -1,6 +1,5 @@
 # FastCity
 <img src="/images/logo.png" width=300/>
-FastCity; City transportation of the futuer!
 
 This is our repository for the solution with came up with for th HackJunction 2019 Erricson Challenge. In this challenge, we use a combination of classical path finding and assignment algorithm to operate cars in a city to deliver customers. Our goal is to distribute the cars to more customers with least amount of movement as fast as possible which has implications on less ecological footprint and a better service to the customers when it comes to the reality.
 
