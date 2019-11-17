@@ -52,7 +52,7 @@ class JunctionEnvironment(gym.Env):
         self.car_ids = self.client.get_team_cars(world)
         self.observation_space = spaces.Box(low=0, high=100, shape=(self.height, self.width, 8), dtype=np.uint8)
 
-    def step(self, action, car_id):
+    def step(self, action, car_id='0'):
         """Run one timestep of the environment's dynamics. When end of
         episode is reached, you are responsible for calling `reset()`
         to reset this environment's state.
